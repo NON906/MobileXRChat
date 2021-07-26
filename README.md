@@ -23,9 +23,9 @@ Androidスマホ1台と対応ゴーグルで、XR(VR・MR・AR)対応のアバ�
 - MLAPI Networking Library  
 https://github.com/Unity-Technologies/com.unity.multiplayer.mlapi.git?path=/com.unity.multiplayer.mlapi#release/0.1.0
 - UniVRM  
-https://github.com/vrm-c/UniVRM.git?path=/Assets/MeshUtility#v0.62.0
-https://github.com/vrm-c/UniVRM.git?path=/Assets/VRMShaders#v0.62.0
-https://github.com/vrm-c/UniVRM.git?path=/Assets/VRM#v0.62.0
+https://github.com/vrm-c/UniVRM.git?path=/Assets/MeshUtility#v0.62.0  
+https://github.com/vrm-c/UniVRM.git?path=/Assets/VRMShaders#v0.62.0  
+https://github.com/vrm-c/UniVRM.git?path=/Assets/VRM#v0.62.0  
 
 以下はこのアセットに含まれている内容です。  
 公開などを行う場合は、それぞれのライセンスを確認してください。
