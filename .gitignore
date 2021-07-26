@@ -1,0 +1,10 @@
+.DS_Store
+/MobileXRChat/Library/
+/MobileXRChat/Logs/
+/MobileXRChat/obj/
+/MobileXRChat/.vs/
+/MobileXRChat/Temp/
+
+com.kyrylokuzyk.arfoundationremote
+ARFoundationRemoteInstaller
+/MobileXRChat/ARFoundationRemoteCompanionApp/
