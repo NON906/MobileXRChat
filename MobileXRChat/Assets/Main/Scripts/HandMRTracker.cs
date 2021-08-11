@@ -45,7 +45,6 @@ namespace HandDVR
         }
         public Quaternion GetIKOffsetRotation(TrackerPositions targetPosition, TrackingDeviceType deviceType)
         {
-            /*
             if (targetPosition == TrackerPositions.LeftHand)
             {
                 return Quaternion.Euler(0, 90, 270);
@@ -58,8 +57,6 @@ namespace HandDVR
             {
                 return Quaternion.identity;
             }
-            */
-            return Quaternion.identity;
         }
 
         void Awake()
