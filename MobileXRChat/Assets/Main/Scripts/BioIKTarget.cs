@@ -9,10 +9,13 @@ namespace HandDVR
         public Transform HandBone;
         public Transform HandPosition;
         public Transform Finger;
+        public float HandScale;
 
         void LateUpdate()
         {
-            transform.position = HandBone.position - HandPosition.position + Finger.position;
+            Vector3 pos = (Finger.position - HandPosition.position) * HandScale + HandPosition.position;
+
+            transform.position = HandBone.position - HandPosition.position + pos;
         }
     }
 }

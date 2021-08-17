@@ -27,6 +27,8 @@ namespace HandDVR
         float leftPositionWeight_ = 0f;
         float rightPositionWeight_ = 0f;
 
+        float handScale_;
+
         public void SetModelAnimator(Animator animator)
         {
             modelAnimator_ = animator;
@@ -82,6 +84,53 @@ namespace HandDVR
             addFingerIKTargets(HumanBodyBones.RightMiddleDistal, FINGER_LENGTH);
             addFingerIKTargets(HumanBodyBones.RightRingDistal, FINGER_LENGTH);
             addFingerIKTargets(HumanBodyBones.RightLittleDistal, FINGER_LENGTH);
+
+            float handSizeRaw = 0f;
+            if (PlayerPrefs.HasKey("HandMR_PointLength_15"))
+            {
+                for (int loop = 1; loop < 5; loop++)
+                {
+                    handSizeRaw += Vector3.Distance(
+                        new Vector3(PlayerPrefs.GetFloat("HandMR_PointPosX_" + loop), PlayerPrefs.GetFloat("HandMR_PointPosY_" + loop), 0f),
+                        new Vector3(PlayerPrefs.GetFloat("HandMR_PointPosX_0"), PlayerPrefs.GetFloat("HandMR_PointPosY_0"), 0f)) * 3f;
+                }
+                for (int loop = 4; loop < 16; loop++)
+                {
+                    handSizeRaw += PlayerPrefs.GetFloat("HandMR_PointLength_" + loop);
+                }
+            }
+            else
+            {
+                handSizeRaw += (new Vector3(-0.02f, 0.08f, 0.0f).magnitude
+                    + new Vector3(0.0f, 0.08f, 0.0f).magnitude
+                    + new Vector3(0.02f, 0.075f, 0.0f).magnitude
+                    + new Vector3(0.04f, 0.07f, 0.0f).magnitude) * 3f;
+
+                float[] fingerLengthArray = new float[]
+                {
+                0.03f, 0.03f, 0.02f, 0.015f, 0.035f, 0.02f, 0.015f, 0.035f, 0.025f, 0.015f,
+                0.035f, 0.025f, 0.015f, 0.03f, 0.015f, 0.015f
+                };
+                for (int loop = 4; loop < 16; loop++)
+                {
+                    handSizeRaw += fingerLengthArray[loop];
+                }
+            }
+            float handSizeModel = 0f;
+            for (int loop = 0; loop < 4; loop++)
+            {
+                handSizeModel += Vector3.Distance(animator.GetBoneTransform(HumanBodyBones.LeftHand).position,
+                    animator.GetBoneTransform(HumanBodyBones.LeftIndexProximal + loop * 3).position) * 3f;
+
+                handSizeModel += Vector3.Distance(animator.GetBoneTransform(HumanBodyBones.LeftIndexProximal + loop * 3).position,
+                    animator.GetBoneTransform(HumanBodyBones.LeftIndexIntermediate + loop * 3).position);
+                handSizeModel += Vector3.Distance(animator.GetBoneTransform(HumanBodyBones.LeftIndexIntermediate + loop * 3).position,
+                    animator.GetBoneTransform(HumanBodyBones.LeftIndexDistal + loop * 3).position);
+                handSizeModel += Vector3.Distance(animator.GetBoneTransform(HumanBodyBones.LeftIndexDistal + loop * 3).position,
+                    animator.GetBoneTransform(HumanBodyBones.LeftIndexDistal + loop * 3).GetChild(0).position);
+            }
+
+            handScale_ = handSizeModel / handSizeRaw;
 
             if (bioIK_ == null)
             {
@@ -147,8 +196,8 @@ namespace HandDVR
             bioJoint.Y.UpperLimit = 15f;
             bioJoint.Z.Enabled = true;
             bioJoint.Z.Constrained = true;
-            bioJoint.Z.LowerLimit = -15f;
-            bioJoint.Z.UpperLimit = 30f;
+            bioJoint.Z.LowerLimit = -30f;
+            bioJoint.Z.UpperLimit = 15f;
             bioJoint.JointType = JointType.Rotational;
             bioJoint.SetOrientation(Vector3.zero);
             rightBioBehaviours_.Add(bioJoint);
@@ -175,6 +224,7 @@ namespace HandDVR
                 target.HandBone = animator.GetBoneTransform(HumanBodyBones.LeftHand);
                 target.HandPosition = leftHand_.GetFinger(0);
                 target.Finger = leftHand_.GetFinger(4);
+                target.HandScale = handScale_;
                 bioPosition.SetTargetTransform(targetObj.transform);
             }
             leftBioBehaviours_.Add(bioPosition);
@@ -186,8 +236,8 @@ namespace HandDVR
             bioJoint.Y.Enabled = false;
             bioJoint.Z.Enabled = true;
             bioJoint.Z.Constrained = true;
-            bioJoint.Z.LowerLimit = 0f;
-            bioJoint.Z.UpperLimit = 30f;
+            bioJoint.Z.LowerLimit = -30f;
+            bioJoint.Z.UpperLimit = 0f;
             bioJoint.JointType = JointType.Rotational;
             bioJoint.SetOrientation(Vector3.zero);
             boneTrans = boneTrans.GetChild(0);
@@ -200,6 +250,7 @@ namespace HandDVR
                 target.HandBone = animator.GetBoneTransform(HumanBodyBones.RightHand);
                 target.HandPosition = rightHand_.GetFinger(0);
                 target.Finger = rightHand_.GetFinger(4);
+                target.HandScale = handScale_;
                 bioPosition.SetTargetTransform(targetObj.transform);
             }
             rightBioBehaviours_.Add(bioPosition);
@@ -236,8 +287,8 @@ namespace HandDVR
             bioJoint.Y.UpperLimit = 25f;
             bioJoint.Z.Enabled = true;
             bioJoint.Z.Constrained = true;
-            bioJoint.Z.LowerLimit = -15f;
-            bioJoint.Z.UpperLimit = 30f;
+            bioJoint.Z.LowerLimit = -30f;
+            bioJoint.Z.UpperLimit = 15f;
             bioJoint.JointType = JointType.Rotational;
             bioJoint.SetOrientation(Vector3.zero);
             rightBioBehaviours_.Add(bioJoint);
@@ -268,8 +319,8 @@ namespace HandDVR
             bioJoint.Y.Enabled = false;
             bioJoint.Z.Enabled = true;
             bioJoint.Z.Constrained = true;
-            bioJoint.Z.LowerLimit = 0f;
-            bioJoint.Z.UpperLimit = 30f;
+            bioJoint.Z.LowerLimit = -30f;
+            bioJoint.Z.UpperLimit = 0f;
             bioJoint.JointType = JointType.Rotational;
             bioJoint.SetOrientation(Vector3.zero);
             rightBioBehaviours_.Add(bioJoint);
@@ -296,6 +347,7 @@ namespace HandDVR
                 target.HandBone = animator.GetBoneTransform(HumanBodyBones.LeftHand);
                 target.HandPosition = leftHand_.GetFinger(0);
                 target.Finger = leftHand_.GetFinger(8);
+                target.HandScale = handScale_;
                 bioPosition.SetTargetTransform(targetObj.transform);
             }
             leftBioBehaviours_.Add(bioPosition);
@@ -307,8 +359,8 @@ namespace HandDVR
             bioJoint.Y.Enabled = false;
             bioJoint.Z.Enabled = true;
             bioJoint.Z.Constrained = true;
-            bioJoint.Z.LowerLimit = 0f;
-            bioJoint.Z.UpperLimit = 30f;
+            bioJoint.Z.LowerLimit = -30f;
+            bioJoint.Z.UpperLimit = 0f;
             bioJoint.JointType = JointType.Rotational;
             bioJoint.SetOrientation(Vector3.zero);
             rightBioBehaviours_.Add(bioJoint);
@@ -322,6 +374,7 @@ namespace HandDVR
                 target.HandBone = animator.GetBoneTransform(HumanBodyBones.RightHand);
                 target.HandPosition = rightHand_.GetFinger(0);
                 target.Finger = rightHand_.GetFinger(8);
+                target.HandScale = handScale_;
                 bioPosition.SetTargetTransform(targetObj.transform);
             }
             rightBioBehaviours_.Add(bioPosition);
@@ -358,8 +411,8 @@ namespace HandDVR
             bioJoint.Y.UpperLimit = 5f;
             bioJoint.Z.Enabled = true;
             bioJoint.Z.Constrained = true;
-            bioJoint.Z.LowerLimit = -15f;
-            bioJoint.Z.UpperLimit = 30f;
+            bioJoint.Z.LowerLimit = -30f;
+            bioJoint.Z.UpperLimit = 15f;
             bioJoint.JointType = JointType.Rotational;
             bioJoint.SetOrientation(Vector3.zero);
             rightBioBehaviours_.Add(bioJoint);
@@ -390,8 +443,8 @@ namespace HandDVR
             bioJoint.Y.Enabled = false;
             bioJoint.Z.Enabled = true;
             bioJoint.Z.Constrained = true;
-            bioJoint.Z.LowerLimit = 0f;
-            bioJoint.Z.UpperLimit = 30f;
+            bioJoint.Z.LowerLimit = -30f;
+            bioJoint.Z.UpperLimit = 0f;
             bioJoint.JointType = JointType.Rotational;
             bioJoint.SetOrientation(Vector3.zero);
             rightBioBehaviours_.Add(bioJoint);
@@ -418,6 +471,7 @@ namespace HandDVR
                 target.HandBone = animator.GetBoneTransform(HumanBodyBones.LeftHand);
                 target.HandPosition = leftHand_.GetFinger(0);
                 target.Finger = leftHand_.GetFinger(12);
+                target.HandScale = handScale_;
                 bioPosition.SetTargetTransform(targetObj.transform);
             }
             leftBioBehaviours_.Add(bioPosition);
@@ -429,8 +483,8 @@ namespace HandDVR
             bioJoint.Y.Enabled = false;
             bioJoint.Z.Enabled = true;
             bioJoint.Z.Constrained = true;
-            bioJoint.Z.LowerLimit = 0f;
-            bioJoint.Z.UpperLimit = 30f;
+            bioJoint.Z.LowerLimit = -30f;
+            bioJoint.Z.UpperLimit = 0f;
             bioJoint.JointType = JointType.Rotational;
             bioJoint.SetOrientation(Vector3.zero);
             rightBioBehaviours_.Add(bioJoint);
@@ -444,6 +498,7 @@ namespace HandDVR
                 target.HandBone = animator.GetBoneTransform(HumanBodyBones.RightHand);
                 target.HandPosition = rightHand_.GetFinger(0);
                 target.Finger = rightHand_.GetFinger(12);
+                target.HandScale = handScale_;
                 bioPosition.SetTargetTransform(targetObj.transform);
             }
             rightBioBehaviours_.Add(bioPosition);
@@ -480,8 +535,8 @@ namespace HandDVR
             bioJoint.Y.UpperLimit = 5f;
             bioJoint.Z.Enabled = true;
             bioJoint.Z.Constrained = true;
-            bioJoint.Z.LowerLimit = -15f;
-            bioJoint.Z.UpperLimit = 30f;
+            bioJoint.Z.LowerLimit = -30f;
+            bioJoint.Z.UpperLimit = 15f;
             bioJoint.JointType = JointType.Rotational;
             bioJoint.SetOrientation(Vector3.zero);
             rightBioBehaviours_.Add(bioJoint);
@@ -512,8 +567,8 @@ namespace HandDVR
             bioJoint.Y.Enabled = false;
             bioJoint.Z.Enabled = true;
             bioJoint.Z.Constrained = true;
-            bioJoint.Z.LowerLimit = 0f;
-            bioJoint.Z.UpperLimit = 30f;
+            bioJoint.Z.LowerLimit = -30f;
+            bioJoint.Z.UpperLimit = 0f;
             bioJoint.JointType = JointType.Rotational;
             bioJoint.SetOrientation(Vector3.zero);
             rightBioBehaviours_.Add(bioJoint);
@@ -540,6 +595,7 @@ namespace HandDVR
                 target.HandBone = animator.GetBoneTransform(HumanBodyBones.LeftHand);
                 target.HandPosition = leftHand_.GetFinger(0);
                 target.Finger = leftHand_.GetFinger(16);
+                target.HandScale = handScale_;
                 bioPosition.SetTargetTransform(targetObj.transform);
             }
             leftBioBehaviours_.Add(bioPosition);
@@ -551,8 +607,8 @@ namespace HandDVR
             bioJoint.Y.Enabled = false;
             bioJoint.Z.Enabled = true;
             bioJoint.Z.Constrained = true;
-            bioJoint.Z.LowerLimit = 0f;
-            bioJoint.Z.UpperLimit = 30f;
+            bioJoint.Z.LowerLimit = -30f;
+            bioJoint.Z.UpperLimit = 0f;
             bioJoint.JointType = JointType.Rotational;
             bioJoint.SetOrientation(Vector3.zero);
             rightBioBehaviours_.Add(bioJoint);
@@ -566,6 +622,7 @@ namespace HandDVR
                 target.HandBone = animator.GetBoneTransform(HumanBodyBones.RightHand);
                 target.HandPosition = rightHand_.GetFinger(0);
                 target.Finger = rightHand_.GetFinger(16);
+                target.HandScale = handScale_;
                 bioPosition.SetTargetTransform(targetObj.transform);
             }
             rightBioBehaviours_.Add(bioPosition);
@@ -602,8 +659,8 @@ namespace HandDVR
             bioJoint.Y.UpperLimit = 5f;
             bioJoint.Z.Enabled = true;
             bioJoint.Z.Constrained = true;
-            bioJoint.Z.LowerLimit = -15f;
-            bioJoint.Z.UpperLimit = 30f;
+            bioJoint.Z.LowerLimit = -30f;
+            bioJoint.Z.UpperLimit = 15f;
             bioJoint.JointType = JointType.Rotational;
             bioJoint.SetOrientation(Vector3.zero);
             rightBioBehaviours_.Add(bioJoint);
@@ -634,8 +691,8 @@ namespace HandDVR
             bioJoint.Y.Enabled = false;
             bioJoint.Z.Enabled = true;
             bioJoint.Z.Constrained = true;
-            bioJoint.Z.LowerLimit = 0f;
-            bioJoint.Z.UpperLimit = 30f;
+            bioJoint.Z.LowerLimit = -30f;
+            bioJoint.Z.UpperLimit = 0f;
             bioJoint.JointType = JointType.Rotational;
             bioJoint.SetOrientation(Vector3.zero);
             rightBioBehaviours_.Add(bioJoint);
@@ -662,6 +719,7 @@ namespace HandDVR
                 target.HandBone = animator.GetBoneTransform(HumanBodyBones.LeftHand);
                 target.HandPosition = leftHand_.GetFinger(0);
                 target.Finger = leftHand_.GetFinger(20);
+                target.HandScale = handScale_;
                 bioPosition.SetTargetTransform(targetObj.transform);
             }
             leftBioBehaviours_.Add(bioPosition);
@@ -673,8 +731,8 @@ namespace HandDVR
             bioJoint.Y.Enabled = false;
             bioJoint.Z.Enabled = true;
             bioJoint.Z.Constrained = true;
-            bioJoint.Z.LowerLimit = 0f;
-            bioJoint.Z.UpperLimit = 30f;
+            bioJoint.Z.LowerLimit = -30f;
+            bioJoint.Z.UpperLimit = 0f;
             bioJoint.JointType = JointType.Rotational;
             bioJoint.SetOrientation(Vector3.zero);
             rightBioBehaviours_.Add(bioJoint);
@@ -688,6 +746,7 @@ namespace HandDVR
                 target.HandBone = animator.GetBoneTransform(HumanBodyBones.RightHand);
                 target.HandPosition = rightHand_.GetFinger(0);
                 target.Finger = rightHand_.GetFinger(20);
+                target.HandScale = handScale_;
                 bioPosition.SetTargetTransform(targetObj.transform);
             }
             rightBioBehaviours_.Add(bioPosition);
